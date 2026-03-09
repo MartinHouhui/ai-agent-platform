@@ -7,6 +7,8 @@ import {
   SettingOutlined,
 } from '@ant-design/icons'
 import ChatInterface from './components/ChatInterface'
+import WizardFlow from './components/WizardFlow'
+import SkillsManager from './components/SkillsManager'
 import './App.css'
 
 const { Header, Content, Sider } = Layout
@@ -31,7 +33,7 @@ function App() {
     {
       key: 'skills',
       icon: <ApiOutlined />,
-      label: 'Skills',
+      label: 'Skills 管理',
     },
     {
       key: 'settings',
@@ -39,6 +41,27 @@ function App() {
       label: '设置',
     },
   ]
+
+  const renderContent = () => {
+    switch (currentPage) {
+      case 'chat':
+        return <ChatInterface />
+      case 'wizard':
+        return <WizardFlow />
+      case 'skills':
+        return <SkillsManager />
+      case 'settings':
+        return (
+          <div style={{ textAlign: 'center', marginTop: 100 }}>
+            <SettingOutlined style={{ fontSize: 64, color: '#1890ff' }} />
+            <h2>设置</h2>
+            <p>正在开发中...</p>
+          </div>
+        )
+      default:
+        return <ChatInterface />
+    }
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -75,28 +98,7 @@ function App() {
               overflow: 'hidden',
             }}
           >
-            {currentPage === 'chat' && <ChatInterface />}
-            {currentPage === 'wizard' && (
-              <div style={{ textAlign: 'center', marginTop: 100 }}>
-                <ThunderboltOutlined style={{ fontSize: 64, color: '#1890ff' }} />
-                <h2>适配向导</h2>
-                <p>正在开发中...</p>
-              </div>
-            )}
-            {currentPage === 'skills' && (
-              <div style={{ textAlign: 'center', marginTop: 100 }}>
-                <ApiOutlined style={{ fontSize: 64, color: '#1890ff' }} />
-                <h2>Skills 管理</h2>
-                <p>正在开发中...</p>
-              </div>
-            )}
-            {currentPage === 'settings' && (
-              <div style={{ textAlign: 'center', marginTop: 100 }}>
-                <SettingOutlined style={{ fontSize: 64, color: '#1890ff' }} />
-                <h2>设置</h2>
-                <p>正在开发中...</p>
-              </div>
-            )}
+            {renderContent()}
           </div>
         </Content>
       </Layout>
