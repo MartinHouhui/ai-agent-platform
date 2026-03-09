@@ -3,33 +3,67 @@
  */
 
 import dotenv from 'dotenv';
-import { Agent } from './core/Agent';
-import { logger } from './utils/logger';
-
-// 加载环境变量
 dotenv.config();
 
-// 创建 Agent 实例
-const agent = new Agent();
+import 'reflect-metadata';
+import { Agent } from './core/Agent';
+import { initDatabase } from './config/database';
+import { startServer } from './api/server';
+import { logger } from './utils/logger';
+import { SkillManager } from './skills/SkillManager';
+import { QueryOrderSkill } from './skills/examples/QueryOrderSkill';
+import { RESTAdapter } from './adapters/RESTAdapter';
+import { AdapterManager } from './adapters/AdapterManager';
 
 /**
  * 主函数
  */
 async function main() {
-  logger.info('AI Agent Platform 启动');
-  logger.info(`Node 环境: ${process.env.NODE_ENV || 'development'}`);
+  logger.info('🤖 AI Agent Platform 启动中...');
+  logger.info(`运行环境: ${process.env.NODE_ENV || 'development'}`);
 
-  // 示例：测试 Agent
   try {
-    const result = await agent.process('帮我查询今天的订单数据');
-    logger.info('处理结果', { result });
-  } catch (error: any) {
-    logger.error('处理失败', { error: error.message });
-  }
+    // 1. 初始化数据库
+    logger.info('📦 初始化数据库...');
+    await initDatabase();
 
-  // TODO: 启动 HTTP 服务器
-  // TODO: 启动消息队列监听
-  // TODO: 启动定时任务
+    // 2. 创建 Agent
+    logger.info('🧠 初始化 Agent...');
+    const agent = new Agent();
+
+    // 3. 注册示例 Skills
+    logger.info('📚 注册 Skills...');
+    const skillManager = new SkillManager();
+    skillManager.registerSkill(QueryOrderSkill);
+
+    // 4. 注册示例 Adapter（可以对接自然或其他系统）
+    logger.info('🔌 注册 Adapters...');
+    const adapterManager = new AdapterManager();
+    
+    // 示例：注册一个通用的业务系统适配器
+    const businessAdapter = new RESTAdapter('business-system');
+    await adapterManager.registerAdapter(businessAdapter);
+
+    // 5. 启动 API 服务器
+    const port = parseInt(process.env.PORT || '3000');
+    logger.info(`🌐 启动 API 服务器 (端口: ${port})...`);
+    startServer(agent, port);
+
+    logger.info('✅ AI Agent Platform 启动完成！');
+    logger.info('');
+    logger.info('📖 使用方法:');
+    logger.info('  POST http://localhost:3000/api/chat');
+    logger.info('  Body: { "message": "帮我查询今天的订单" }');
+    logger.info('');
+    logger.info('💡 测试命令:');
+    logger.info('  curl -X POST http://localhost:3000/api/chat \\');
+    logger.info('    -H "Content-Type: application/json" \\');
+    logger.info('    -d \'{"message":"帮我查询今天的订单"}\'');
+
+  } catch (error: any) {
+    logger.error('❌ 启动失败', { error: error.message, stack: error.stack });
+    process.exit(1);
+  }
 }
 
 // 运行
@@ -40,4 +74,4 @@ if (require.main === module) {
   });
 }
 
-export { agent, Agent };
+export { Agent, SkillManager, AdapterManager };
