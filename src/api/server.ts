@@ -2,23 +2,16 @@
  * HTTP API 服务器
  */
 
-import express, { Request, Response, Router } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Agent } from '../core/Agent';
+import { SkillManager } from '../skills/SkillManager';
+import { AdapterManager } from '../adapters/AdapterManager';
+import { createWizardRoutes } from './wizardRoutes';
+import { createSkillsRoutes } from './skillsRoutes';
+import { createAdapterRoutes } from './adaptersRoutes';
 import { logger } from '../utils/logger';
-
-/**
- * 创建向导路由
- */
-function createWizardRoutes(wizardService: any): Router {
-  const router = Router();
-  
-  // 这里会由 wizardRoutes.ts 提供完整实现
-  // 临时占位，稍后会集成
-  
-  return router;
-}
 
 export function createAPIServer(agent: Agent) {
   const app = express();
@@ -170,6 +163,8 @@ export function createAPIServer(agent: Agent) {
  */
 export function startServer(
   agent: Agent,
+  skillManager: SkillManager,
+  adapterManager: AdapterManager,
   wizardService: any,
   port: number = 3000
 ) {
@@ -177,11 +172,19 @@ export function startServer(
   
   // 添加向导路由
   app.use('/api/wizard', createWizardRoutes(wizardService));
+  
+  // 添加 Skills 路由
+  app.use('/api/skills', createSkillsRoutes(skillManager));
+  
+  // 添加适配器路由
+  app.use('/api/adapters', createAdapterRoutes(adapterManager));
 
   const server = app.listen(port, () => {
     logger.info(`🚀 API 服务器已启动: http://localhost:${port}`);
     logger.info(`📋 API 文档: http://localhost:${port}/health`);
     logger.info(`🧙 向导 API: http://localhost:${port}/api/wizard`);
+    logger.info(`📚 Skills API: http://localhost:${port}/api/skills`);
+    logger.info(`🔌 Adapters API: http://localhost:${port}/api/adapters`);
   });
 
   return server;

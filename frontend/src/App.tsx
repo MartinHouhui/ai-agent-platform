@@ -5,10 +5,13 @@ import {
   ApiOutlined,
   ThunderboltOutlined,
   SettingOutlined,
+  DatabaseOutlined,
 } from '@ant-design/icons'
 import ChatInterface from './components/ChatInterface'
 import WizardFlow from './components/WizardFlow'
 import SkillsManager from './components/SkillsManager'
+import SettingsPage from './components/SettingsPage'
+import AdaptersPage from './components/AdaptersPage'
 import './App.css'
 
 const { Header, Content, Sider } = Layout
@@ -23,7 +26,7 @@ function App() {
     {
       key: 'chat',
       icon: <RobotOutlined />,
-      label: '对话',
+      label: 'AI 对话',
     },
     {
       key: 'wizard',
@@ -36,9 +39,14 @@ function App() {
       label: 'Skills 管理',
     },
     {
+      key: 'adapters',
+      icon: <DatabaseOutlined />,
+      label: '适配器管理',
+    },
+    {
       key: 'settings',
       icon: <SettingOutlined />,
-      label: '设置',
+      label: '系统设置',
     },
   ]
 
@@ -50,14 +58,10 @@ function App() {
         return <WizardFlow />
       case 'skills':
         return <SkillsManager />
+      case 'adapters':
+        return <AdaptersPage />
       case 'settings':
-        return (
-          <div style={{ textAlign: 'center', marginTop: 100 }}>
-            <SettingOutlined style={{ fontSize: 64, color: '#1890ff' }} />
-            <h2>设置</h2>
-            <p>正在开发中...</p>
-          </div>
-        )
+        return <SettingsPage />
       default:
         return <ChatInterface />
     }
@@ -85,6 +89,7 @@ function App() {
         <Header style={{ padding: 0, background: colorBgContainer }}>
           <div className="header-content">
             <h2>AI Agent Platform</h2>
+            <span className="version-badge">v1.0.0</span>
           </div>
         </Header>
         <Content style={{ margin: '24px 16px 0' }}>
@@ -95,7 +100,7 @@ function App() {
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
               height: 'calc(100vh - 112px)',
-              overflow: 'hidden',
+              overflow: 'auto',
             }}
           >
             {renderContent()}

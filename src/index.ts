@@ -53,19 +53,19 @@ async function main() {
     // 6. 启动 API 服务器
     const port = parseInt(process.env.PORT || '3000');
     logger.info(`🌐 启动 API 服务器 (端口: ${port})...`);
-    startServer(agent, wizardService, port);
+    startServer(agent, skillManager, adapterManager, wizardService, port);
 
     logger.info('✅ AI Agent Platform 启动完成！');
     logger.info('');
-    logger.info('📖 使用方法:');
-    logger.info('  POST http://localhost:3000/api/chat');
-    logger.info('  Body: { "message": "帮我查询今天的订单" }');
-    logger.info('');
-    logger.info('🧙 向导 API:');
-    logger.info('  POST http://localhost:3000/api/wizard/start');
-    logger.info('  GET  http://localhost:3000/api/wizard/:sessionId');
+    logger.info('📖 API 端点:');
+    logger.info('  健康检查: GET  http://localhost:3000/health');
+    logger.info('  聊天:     POST http://localhost:3000/api/chat');
+    logger.info('  向导:     POST http://localhost:3000/api/wizard/start');
+    logger.info('  Skills:   GET  http://localhost:3000/api/skills');
+    logger.info('  Adapters: GET  http://localhost:3000/api/adapters');
     logger.info('');
     logger.info('💡 测试命令:');
+    logger.info('  curl http://localhost:3000/health');
     logger.info('  curl -X POST http://localhost:3000/api/chat \\');
     logger.info('    -H "Content-Type: application/json" \\');
     logger.info('    -d \'{"message":"帮我查询今天的订单"}\'');
