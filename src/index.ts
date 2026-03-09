@@ -9,11 +9,13 @@ import 'reflect-metadata';
 import { Agent } from './core/Agent';
 import { initDatabase } from './config/database';
 import { startServer } from './api/server';
+import { createWizardRoutes } from './api/wizardRoutes';
 import { logger } from './utils/logger';
 import { SkillManager } from './skills/SkillManager';
 import { QueryOrderSkill } from './skills/examples/QueryOrderSkill';
 import { RESTAdapter } from './adapters/RESTAdapter';
 import { AdapterManager } from './adapters/AdapterManager';
+import { AdapterWizardService } from './services/AdapterWizardService';
 
 /**
  * 主函数
@@ -44,16 +46,24 @@ async function main() {
     const businessAdapter = new RESTAdapter('business-system');
     await adapterManager.registerAdapter(businessAdapter);
 
-    // 5. 启动 API 服务器
+    // 5. 初始化向导服务
+    logger.info('🧙 初始化向导服务...');
+    const wizardService = new AdapterWizardService();
+
+    // 6. 启动 API 服务器
     const port = parseInt(process.env.PORT || '3000');
     logger.info(`🌐 启动 API 服务器 (端口: ${port})...`);
-    startServer(agent, port);
+    startServer(agent, wizardService, port);
 
     logger.info('✅ AI Agent Platform 启动完成！');
     logger.info('');
     logger.info('📖 使用方法:');
     logger.info('  POST http://localhost:3000/api/chat');
     logger.info('  Body: { "message": "帮我查询今天的订单" }');
+    logger.info('');
+    logger.info('🧙 向导 API:');
+    logger.info('  POST http://localhost:3000/api/wizard/start');
+    logger.info('  GET  http://localhost:3000/api/wizard/:sessionId');
     logger.info('');
     logger.info('💡 测试命令:');
     logger.info('  curl -X POST http://localhost:3000/api/chat \\');

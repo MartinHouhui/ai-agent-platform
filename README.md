@@ -20,9 +20,28 @@
 
 ## 快速开始
 
+### 方式 1: Docker（推荐）
+
+```bash
+# 一键启动（包含 MySQL + Redis + App）
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f app
+
+# 停止服务
+docker-compose down
+```
+
+### 方式 2: 本地开发
+
 ```bash
 # 安装依赖
 npm install
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件
 
 # 启动开发环境
 npm run dev

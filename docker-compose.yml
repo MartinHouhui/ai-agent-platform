@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: ai_agent_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: ai_agent_platform
+      MYSQL_USER: ai_agent
+      MYSQL_PASSWORD: ai_agent123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # Redis（可选，用于缓存）
+  redis:
+    image: redis:7-alpine
+    container_name: ai_agent_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # AI Agent Platform
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_agent_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: ai_agent
+      DB_PASSWORD: ai_agent123456
+      DB_DATABASE: ai_agent_platform
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ALIBABA_API_KEY: ${ALIBABA_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  mysql_data:
+  redis_data:
