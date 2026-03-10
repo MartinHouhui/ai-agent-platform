@@ -1,0 +1,26 @@
+/* ========================================
+   适配器管理页面
+   ======================================== */
+
+.adapters-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.adapter-name {
+  font-weight: 500;
+}
+
+/* 分页器 */
+.ant-pagination {
+  margin-top: var(--space-lg);
+}
+
+.ant-pagination-item-active {
+  border-color: var(--primary);
+}
+
+.ant-pagination-item-active a {
+  color: var(--primary);
+}

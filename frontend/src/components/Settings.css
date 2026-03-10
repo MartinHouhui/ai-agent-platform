@@ -1,0 +1,82 @@
+/* ========================================
+   设置页面
+   ======================================== */
+
+.settings-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-page .page-header {
+  margin-bottom: var(--space-lg);
+}
+
+.settings-page .page-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 设置卡片 */
+.settings-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-md);
+}
+
+.settings-card .ant-card-body {
+  padding: var(--space-2xl);
+}
+
+.settings-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.settings-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: var(--space-xl);
+}
+
+/* 表单样式 */
+.settings-card .ant-form-item {
+  margin-bottom: var(--space-lg);
+}
+
+.settings-card .ant-divider {
+  margin: var(--space-xl) 0;
+}
+
+.settings-card .ant-divider-inner-text {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Tab 样式 */
+.ant-tabs-tab {
+  font-weight: 500;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary);
+}
+
+.ant-tabs-ink-bar {
+  background: var(--primary);
+}
+
+/* Switch 样式 */
+.ant-switch-checked {
+  background: var(--primary);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .settings-card .ant-card-body {
+    padding: var(--space-xl);
+  }
+}

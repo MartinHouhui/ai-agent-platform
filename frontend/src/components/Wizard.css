@@ -1,0 +1,170 @@
+/* ========================================
+   向导页面
+   ======================================== */
+
+.wizard-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* 步骤条 */
+.steps-wrapper {
+  background: var(--bg-alt);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.ant-steps-item-process .ant-steps-item-icon {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.ant-steps-item-finish .ant-steps-item-icon {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon {
+  color: white;
+}
+
+.ant-steps-item-process .ant-steps-item-icon .ant-steps-icon {
+  color: white;
+}
+
+/* 内容区 */
+.wizard-content {
+  flex: 1;
+  margin-bottom: var(--space-xl);
+}
+
+.step-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  min-height: 400px;
+}
+
+.step-card .ant-card-body {
+  padding: var(--space-2xl);
+}
+
+/* 操作按钮 */
+.wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+}
+
+.wizard-actions button {
+  min-width: 100px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.wizard-actions button[type="primary"] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.wizard-actions button[type="primary"]:hover:not(:disabled) {
+  background: #3D4A3E;
+  border-color: #3D4A3E;
+}
+
+/* 占位符样式 */
+.analysis-placeholder,
+.generation-placeholder,
+.deployment-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+}
+
+.analysis-icon,
+.generation-icon,
+.deployment-icon {
+  font-size: 64px;
+  margin-bottom: var(--space-lg);
+}
+
+.analysis-placeholder h3,
+.generation-placeholder h3,
+.deployment-placeholder h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+.analysis-placeholder p,
+.generation-placeholder p,
+.deployment-placeholder p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+}
+
+/* 功能选择 */
+.feature-selection h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.feature-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.feature-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .steps-wrapper {
+    padding: var(--space-lg);
+  }
+  
+  .step-card .ant-card-body {
+    padding: var(--space-xl);
+  }
+}

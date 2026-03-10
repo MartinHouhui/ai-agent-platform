@@ -1,0 +1,156 @@
+/* ========================================
+   Skills 管理页面
+   ======================================== */
+
+.skills-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 页面头部 */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-info h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.header-info p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 14px;
+}
+
+.add-button {
+  background: var(--primary);
+  border-color: var(--primary);
+  font-weight: 500;
+}
+
+.add-button:hover {
+  background: #3D4A3E;
+  border-color: #3D4A3E;
+}
+
+/* 表格 */
+.table-wrapper {
+  flex: 1;
+  background: var(--bg-alt);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: var(--space-lg);
+  overflow: auto;
+}
+
+.table-wrapper .ant-table {
+  background: transparent;
+}
+
+.table-wrapper .ant-table-thead > tr > th {
+  background: var(--bg);
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--border);
+}
+
+.table-wrapper .ant-table-tbody > tr:hover > td {
+  background: rgba(45, 58, 46, 0.02);
+}
+
+.skill-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* 按钮样式 */
+.ant-btn-link {
+  padding: 0 8px;
+  height: auto;
+}
+
+.ant-btn-link:hover {
+  background: transparent;
+}
+
+/* Modal 样式 */
+.ant-modal-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.ant-modal-footer {
+  border-top: 1px solid var(--border);
+}
+
+.ant-modal-footer .ant-btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.ant-modal-footer .ant-btn-primary:hover {
+  background: #3D4A3E;
+  border-color: #3D4A3E;
+}
+
+/* 表单样式 */
+.ant-form-item-label > label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.ant-input,
+.ant-select-selector,
+.ant-input-affix-wrapper {
+  border-radius: var(--radius-md);
+  border-color: var(--border);
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(45, 58, 46, 0.08);
+}
+
+.ant-select-focused .ant-select-selector {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(45, 58, 46, 0.08) !important;
+}
+
+/* 代码输入框 */
+textarea[style*="monospace"] {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace !important;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Tag 样式 */
+.ant-tag {
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+/* 分页器 */
+.ant-pagination {
+  margin-top: var(--space-lg);
+}
+
+.ant-pagination-item-active {
+  border-color: var(--primary);
+}
+
+.ant-pagination-item-active a {
+  color: var(--primary);
+}

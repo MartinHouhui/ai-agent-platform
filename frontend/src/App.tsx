@@ -1,113 +1,97 @@
 import { useState } from 'react'
-import { Layout, Menu, theme } from 'antd'
+import { Button } from 'antd'
 import {
-  RobotOutlined,
-  ApiOutlined,
+  MessageOutlined,
   ThunderboltOutlined,
-  SettingOutlined,
+  ApiOutlined,
   DatabaseOutlined,
+  SettingOutlined,
 } from '@ant-design/icons'
-import ChatInterface from './components/ChatInterface'
-import WizardFlow from './components/WizardFlow'
-import SkillsManager from './components/SkillsManager'
-import SettingsPage from './components/SettingsPage'
-import AdaptersPage from './components/AdaptersPage'
+import Chat from './components/Chat'
+import Wizard from './components/Wizard'
+import Skills from './components/Skills'
+import Adapters from './components/Adapters'
+import Settings from './components/Settings'
 import './App.css'
-
-const { Header, Content, Sider } = Layout
 
 function App() {
   const [currentPage, setCurrentPage] = useState('chat')
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken()
 
-  const menuItems = [
-    {
-      key: 'chat',
-      icon: <RobotOutlined />,
-      label: 'AI 对话',
-    },
-    {
-      key: 'wizard',
-      icon: <ThunderboltOutlined />,
-      label: '适配向导',
-    },
-    {
-      key: 'skills',
-      icon: <ApiOutlined />,
-      label: 'Skills 管理',
-    },
-    {
-      key: 'adapters',
-      icon: <DatabaseOutlined />,
-      label: '适配器管理',
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: '系统设置',
-    },
+  const pages = [
+    { key: 'chat', icon: <MessageOutlined />, label: '对话' },
+    { key: 'wizard', icon: <ThunderboltOutlined />, label: '向导' },
+    { key: 'skills', icon: <ApiOutlined />, label: 'Skills' },
+    { key: 'adapters', icon: <DatabaseOutlined />, label: '适配器' },
+    { key: 'settings', icon: <SettingOutlined />, label: '设置' },
   ]
 
   const renderContent = () => {
     switch (currentPage) {
       case 'chat':
-        return <ChatInterface />
+        return <Chat />
       case 'wizard':
-        return <WizardFlow />
+        return <Wizard />
       case 'skills':
-        return <SkillsManager />
+        return <Skills />
       case 'adapters':
-        return <AdaptersPage />
+        return <Adapters />
       case 'settings':
-        return <SettingsPage />
+        return <Settings />
       default:
-        return <ChatInterface />
+        return <Chat />
     }
   }
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        collapsible
-        breakpoint="lg"
-        collapsedWidth={80}
-        theme="light"
-      >
+    <div className="app">
+      {/* 侧边栏 */}
+      <aside className="sidebar">
         <div className="logo">
-          <RobotOutlined style={{ fontSize: 32, color: '#1890ff' }} />
+          <div className="logo-icon">◆</div>
+          <div className="logo-text">
+            <h1>AI Agent</h1>
+            <p>智能业务平台</p>
+          </div>
         </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[currentPage]}
-          items={menuItems}
-          onClick={(e) => setCurrentPage(e.key)}
-        />
-      </Sider>
-      <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <div className="header-content">
-            <h2>AI Agent Platform</h2>
-            <span className="version-badge">v1.0.0</span>
+
+        <nav className="nav">
+          {pages.map(page => (
+            <button
+              key={page.key}
+              className={`nav-item ${currentPage === page.key ? 'active' : ''}`}
+              onClick={() => setCurrentPage(page.key)}
+            >
+              <span className="nav-icon">{page.icon}</span>
+              <span className="nav-label">{page.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="status">
+            <span className="status-dot"></span>
+            <span>运行中</span>
           </div>
-        </Header>
-        <Content style={{ margin: '24px 16px 0' }}>
-          <div
-            style={{
-              padding: 24,
-              minHeight: 360,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-              height: 'calc(100vh - 112px)',
-              overflow: 'auto',
-            }}
-          >
-            {renderContent()}
+        </div>
+      </aside>
+
+      {/* 主内容区 */}
+      <main className="main">
+        <header className="header">
+          <h2 className="page-title">
+            {pages.find(p => p.key === currentPage)?.label}
+          </h2>
+          <div className="user">
+            <div className="avatar">A</div>
+            <span>Admin</span>
           </div>
-        </Content>
-      </Layout>
-    </Layout>
+        </header>
+
+        <div className="content">
+          {renderContent()}
+        </div>
+      </main>
+    </div>
   )
 }
 
