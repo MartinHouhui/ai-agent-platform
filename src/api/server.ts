@@ -6,14 +6,16 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Agent } from '../core/Agent';
+import { AgentEngine } from '../core/AgentEngine';
 import { SkillManager } from '../skills/SkillManager';
 import { AdapterManager } from '../adapters/AdapterManager';
 import { createWizardRoutes } from './wizardRoutes';
 import { createSkillsRoutes } from './skillsRoutes';
 import { createAdapterRoutes } from './adaptersRoutes';
+import { createAgentRoutes } from './agentRoutes';
 import { logger } from '../utils/logger';
 
-export function createAPIServer(agent: Agent) {
+export function createAPIServer(agent: Agent, agentEngine?: AgentEngine) {
   const app = express();
 
   // 中间件
@@ -128,18 +130,24 @@ export function startServer(
   skillManager: SkillManager,
   adapterManager: AdapterManager,
   wizardService: any,
-  port: number = 3000
+  port: number = 3000,
+  agentEngine?: AgentEngine
 ) {
-  const app = createAPIServer(agent);
-  
+  const app = createAPIServer(agent, agentEngine);
+
   // 添加向导路由
   app.use('/api/wizard', createWizardRoutes(wizardService));
-  
+
   // 添加 Skills 路由
   app.use('/api/skills', createSkillsRoutes(skillManager));
-  
+
   // 添加适配器路由
   app.use('/api/adapters', createAdapterRoutes(adapterManager));
+
+  // 添加 Agent 引擎路由（如果提供了 agentEngine）
+  if (agentEngine) {
+    app.use('/api/agent', createAgentRoutes(agentEngine));
+  }
 
   const server = app.listen(port, () => {
     logger.info(`🚀 API 服务器已启动: http://localhost:${port}`);
@@ -147,6 +155,9 @@ export function startServer(
     logger.info(`🧙 向导 API: http://localhost:${port}/api/wizard`);
     logger.info(`📚 Skills API: http://localhost:${port}/api/skills`);
     logger.info(`🔌 Adapters API: http://localhost:${port}/api/adapters`);
+    if (agentEngine) {
+      logger.info(`🤖 Agent 引擎 API: http://localhost:${port}/api/agent`);
+    }
   });
 
   return server;

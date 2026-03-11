@@ -45,7 +45,9 @@ export enum TaskType {
   SKILL_LEARN = 'skill_learn',
   SYSTEM_INTEGRATE = 'system_integrate',
   MESSAGE_SEND = 'message_send',
-  DATA_ANALYZE = 'data_analyze'
+  DATA_ANALYZE = 'data_analyze',
+  CHAT = 'chat',
+  UNKNOWN = 'unknown'
 }
 
 export enum TaskStatus {
@@ -77,6 +79,9 @@ export interface Result {
     duration: number;
     model?: string;
     tools?: string[];
+    traceId?: string;
+    tasks?: any[];
+    [key: string]: any; // 允许其他自定义字段
   };
 }
 

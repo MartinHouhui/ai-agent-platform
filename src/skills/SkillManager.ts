@@ -177,4 +177,30 @@ export class SkillManager {
   listSkills(): SkillDefinition[] {
     return Array.from(this.skills.values());
   }
+
+  /**
+   * 更新 Skill 统计信息
+   */
+  async updateStats(skillId: string, success: boolean): Promise<void> {
+    const skill = this.skills.get(skillId);
+    if (!skill) {
+      logger.warn('更新统计失败：Skill 不存在', { skillId });
+      return;
+    }
+
+    // 更新成功率（简单移动平均）
+    const totalUses = skill.metadata.usageCount + 1;
+    const successCount = skill.metadata.successRate * skill.metadata.usageCount + (success ? 1 : 0);
+    skill.metadata.successRate = successCount / totalUses;
+    skill.metadata.usageCount = totalUses;
+
+    logger.info('Skill 统计已更新', {
+      skillId,
+      success,
+      usageCount: skill.metadata.usageCount,
+      successRate: skill.metadata.successRate.toFixed(2)
+    });
+
+    // TODO: 持久化到数据库
+  }
 }
