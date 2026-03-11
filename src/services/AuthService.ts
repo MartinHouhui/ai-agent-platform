@@ -9,14 +9,21 @@ import { generateToken } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 export class AuthService {
-  private userRepository = getRepository(User);
+  /**
+   * 获取用户 Repository（延迟初始化）
+   */
+  private getUserRepository() {
+    return getRepository(User);
+  }
 
   /**
    * 用户注册
    */
   async register(username: string, email: string, password: string): Promise<{ user: User; token: string }> {
+    const userRepository = this.getUserRepository();
+
     // 检查用户名是否已存在
-    const existingUser = await this.userRepository.findOne({
+    const existingUser = await userRepository.findOne({
       where: [{ username }, { email }],
     });
 
@@ -28,7 +35,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 创建用户
-    const user = this.userRepository.create({
+    const user = userRepository.create({
       username,
       email,
       password: hashedPassword,
@@ -36,7 +43,7 @@ export class AuthService {
       isActive: true,
     });
 
-    await this.userRepository.save(user);
+    await userRepository.save(user);
 
     // 生成 token
     const token = generateToken(user);
@@ -50,8 +57,10 @@ export class AuthService {
    * 用户登录
    */
   async login(username: string, password: string): Promise<{ user: User; token: string }> {
+    const userRepository = this.getUserRepository();
+
     // 查找用户
-    const user = await this.userRepository.findOne({
+    const user = await userRepository.findOne({
       where: [{ username }, { email: username }], // 支持用户名或邮箱登录
     });
 
@@ -71,7 +80,7 @@ export class AuthService {
 
     // 更新最后登录时间
     user.lastLoginAt = new Date();
-    await this.userRepository.save(user);
+    await userRepository.save(user);
 
     // 生成 token
     const token = generateToken(user);
@@ -85,7 +94,8 @@ export class AuthService {
    * 获取用户信息
    */
   async getUserById(userId: string): Promise<User | undefined> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const userRepository = this.getUserRepository();
+    const user = await userRepository.findOne({ where: { id: userId } });
     return user;
   }
 
@@ -93,7 +103,8 @@ export class AuthService {
    * 更新用户信息
    */
   async updateUser(userId: string, updates: Partial<User>): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const userRepository = this.getUserRepository();
+    const user = await userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new Error('用户不存在');
     }
@@ -103,7 +114,7 @@ export class AuthService {
     delete updates.id;
 
     Object.assign(user, updates);
-    await this.userRepository.save(user);
+    await userRepository.save(user);
 
     logger.info('用户信息更新', { userId, updates: Object.keys(updates) });
 
@@ -114,7 +125,8 @@ export class AuthService {
    * 修改密码
    */
   async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const userRepository = this.getUserRepository();
+    const user = await userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new Error('用户不存在');
     }
@@ -127,7 +139,7 @@ export class AuthService {
 
     // 加密新密码
     user.password = await bcrypt.hash(newPassword, 10);
-    await this.userRepository.save(user);
+    await userRepository.save(user);
 
     logger.info('密码修改成功', { userId });
   }
@@ -136,7 +148,9 @@ export class AuthService {
    * 创建管理员账户（仅用于初始化）
    */
   async createAdminUser(): Promise<void> {
-    const existingAdmin = await this.userRepository.findOne({
+    const userRepository = this.getUserRepository();
+
+    const existingAdmin = await userRepository.findOne({
       where: { username: 'admin' },
     });
 
@@ -146,7 +160,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash('admin123456', 10);
-    const admin = this.userRepository.create({
+    const admin = userRepository.create({
       username: 'admin',
       email: 'admin@ai-agent-platform.com',
       password: hashedPassword,
@@ -154,7 +168,7 @@ export class AuthService {
       isActive: true,
     });
 
-    await this.userRepository.save(admin);
+    await userRepository.save(admin);
     logger.info('管理员账户创建成功', { username: 'admin' });
   }
 }

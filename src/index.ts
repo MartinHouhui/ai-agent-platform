@@ -56,10 +56,18 @@ async function main() {
     logger.info('🧙 初始化向导服务...');
     const wizardService = new AdapterWizardService();
 
-    // 7. 初始化管理员账户
-    logger.info('👤 初始化认证系统...');
-    const authService = new AuthService();
-    await authService.createAdminUser();
+    // 7. 初始化管理员账户（仅当数据库可用时）
+    if (process.env.DB_TYPE !== 'none') {
+      try {
+        logger.info('👤 初始化认证系统...');
+        const authService = new AuthService();
+        await authService.createAdminUser();
+      } catch (error: any) {
+        logger.warn('认证系统初始化失败（数据库可能未连接）', { error: error.message });
+      }
+    } else {
+      logger.info('👤 跳过认证系统初始化（无数据库模式）');
+    }
 
     // 8. 启动 API 服务器
     const port = parseInt(process.env.PORT || '3000');
@@ -77,15 +85,15 @@ async function main() {
     logger.info('  Skills:   GET  http://localhost:3000/api/skills');
     logger.info('  Adapters: GET  http://localhost:3000/api/adapters');
     logger.info('');
-    logger.info('💡 默认管理员账户:');
+    logger.info('💡 默认管理员账户（如果数据库可用）:');
     logger.info('  用户名: admin');
     logger.info('  密码: admin123456');
     logger.info('');
     logger.info('💡 测试命令:');
     logger.info('  curl http://localhost:3000/health');
-    logger.info('  curl -X POST http://localhost:3000/api/auth/login \\');
+    logger.info('  curl -X POST http://localhost:3000/api/agent/chat \\');
     logger.info('    -H "Content-Type: application/json" \\');
-    logger.info('    -d \'{"username":"admin","password":"admin123456"}\'');
+    logger.info('    -d \'{"message":"帮我查询今天的订单"}\'');
 
   } catch (error: any) {
     logger.error('❌ 启动失败', { error: error.message, stack: error.stack });
