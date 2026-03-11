@@ -12,8 +12,60 @@ export function createAuthRoutes(): Router {
   const authService = new AuthService();
 
   /**
-   * POST /api/auth/register
-   * 用户注册
+   * @openapi
+   * /api/auth/register:
+   *   post:
+   *     tags:
+   *       - Auth
+   *     summary: 用户注册
+   *     description: 创建新用户账户
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - username
+   *               - email
+   *               - password
+   *             properties:
+   *               username:
+   *                 type: string
+   *                 example: john_doe
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 example: john@example.com
+   *               password:
+   *                 type: string
+   *                 minLength: 6
+   *                 example: password123
+   *     responses:
+   *       201:
+   *         description: 注册成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     user:
+   *                       $ref: '#/components/schemas/User'
+   *                     token:
+   *                       type: string
+   *                       description: JWT Token
+   *       400:
+   *         description: 请求参数错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   router.post('/register', async (req: Request, res: Response) => {
     try {
@@ -64,8 +116,55 @@ export function createAuthRoutes(): Router {
   });
 
   /**
-   * POST /api/auth/login
-   * 用户登录
+   * @openapi
+   * /api/auth/login:
+   *   post:
+   *     tags:
+   *       - Auth
+   *     summary: 用户登录
+   *     description: 使用用户名/邮箱和密码登录
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - username
+   *               - password
+   *             properties:
+   *               username:
+   *                 type: string
+   *                 description: 用户名或邮箱
+   *                 example: admin
+   *               password:
+   *                 type: string
+   *                 example: admin123456
+   *     responses:
+   *       200:
+   *         description: 登录成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     user:
+   *                       $ref: '#/components/schemas/User'
+   *                     token:
+   *                       type: string
+   *                       description: JWT Token
+   *       401:
+   *         description: 认证失败
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   router.post('/login', async (req: Request, res: Response) => {
     try {
@@ -107,8 +206,34 @@ export function createAuthRoutes(): Router {
   });
 
   /**
-   * GET /api/auth/me
-   * 获取当前用户信息
+   * @openapi
+   * /api/auth/me:
+   *   get:
+   *     tags:
+   *       - Auth
+   *     summary: 获取当前用户信息
+   *     description: 获取已认证用户的详细信息
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: 成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/User'
+   *       401:
+   *         description: 未认证
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
    */
   router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {

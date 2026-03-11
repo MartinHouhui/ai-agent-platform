@@ -14,6 +14,7 @@ import { createSkillsRoutes } from './skillsRoutes';
 import { createAdapterRoutes } from './adaptersRoutes';
 import { createAgentRoutes } from './agentRoutes';
 import { createAuthRoutes } from './authRoutes';
+import docsRouter from './docs';
 import { logger } from '../utils/logger';
 
 export function createAPIServer(agent: Agent, agentEngine?: AgentEngine) {
@@ -153,9 +154,12 @@ export function startServer(
   // 添加认证路由
   app.use('/api/auth', createAuthRoutes());
 
+  // API 文档
+  app.use('/api-docs', docsRouter);
+
   const server = app.listen(port, () => {
     logger.info(`🚀 API 服务器已启动: http://localhost:${port}`);
-    logger.info(`📋 API 文档: http://localhost:${port}/health`);
+    logger.info(`📋 API 文档: http://localhost:${port}/api-docs`);
     logger.info(`🔐 认证 API: http://localhost:${port}/api/auth`);
     logger.info(`🧙 向导 API: http://localhost:${port}/api/wizard`);
     logger.info(`📚 Skills API: http://localhost:${port}/api/skills`);
