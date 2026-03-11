@@ -80,44 +80,6 @@ export function createAPIServer(agent: Agent) {
   });
 
   /**
-   * 获取所有 Skills
-   * GET /api/skills
-   */
-  app.get('/api/skills', async (req: Request, res: Response) => {
-    try {
-      // TODO: 从 SkillManager 获取
-      res.json({
-        success: true,
-        data: [],
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  });
-
-  /**
-   * 获取所有适配器
-   * GET /api/adapters
-   */
-  app.get('/api/adapters', async (req: Request, res: Response) => {
-    try {
-      // TODO: 从 AdapterManager 获取
-      res.json({
-        success: true,
-        data: [],
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-  });
-
-  /**
    * 系统自发现
    * POST /api/discover
    * Body: { "systemName": "natural-erp", "apiDocs": "http://..." }

@@ -16,20 +16,20 @@ export class SkillEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 100 })
+  @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ length: 20 })
+  @Column({ type: 'varchar', length: 20 })
   version: string;
 
   @Column({ type: 'text' })
   description: string;
 
   @Index()
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   system: string;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   domain: string;
 
   @Column({ type: 'text', nullable: true })
@@ -53,7 +53,7 @@ export class SkillEntity {
   @Column({ type: 'int', default: 0 })
   usageCount: number;
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @CreateDateColumn()

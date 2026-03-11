@@ -19,10 +19,10 @@ export class LearningCaseEntity {
   taskDescription: string;
 
   @Index()
-  @Column({ length: 100 })
+  @Column({ type: 'varchar', length: 100 })
   systemName: string;
 
-  @Column({ length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   systemType: string;
 
   @Column({ type: 'text' })
@@ -41,7 +41,7 @@ export class LearningCaseEntity {
     result: string;
   }>;
 
-  @Column()
+  @Column({ type: 'boolean' })
   success: boolean;
 
   @Column({ type: 'text' })

@@ -16,14 +16,14 @@ export class AdapterConfigEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
-  @Column({ length: 100, unique: true })
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   type: string; // erp, crm, oa, im, custom
 
-  @Column({ length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   baseUrl: string;
 
   @Column({ type: 'text', nullable: true })
@@ -38,7 +38,7 @@ export class AdapterConfigEntity {
   @Column({ type: 'text', nullable: true })
   customConfig: string; // JSON
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @Column({ type: 'int', default: 30000 })

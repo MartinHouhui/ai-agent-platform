@@ -30,25 +30,46 @@ function Skills() {
   
   const [modalVisible, setModalVisible] = useState(false)
   const [form] = Form.useForm()
+  const [editingSkill, setEditingSkill] = useState(null)
 
   const handleAdd = () => {
+    setEditingSkill(null)
     form.resetFields()
+    setModalVisible(true)
+  }
+
+  const handleEdit = (skill) => {
+    setEditingSkill(skill)
+    form.setFieldsValue(skill)
     setModalVisible(true)
   }
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
-      const newSkill = {
-        id: Date.now(),
-        ...values,
-        status: 'active',
-        usageCount: 0,
-        successRate: 100,
-        createdAt: new Date().toISOString().split('T')[0],
+      
+      if (editingSkill) {
+        // 编辑模式
+        setSkills(skills.map(s => 
+          s.id === editingSkill.id 
+            ? { ...s, ...values }
+            : s
+        ))
+        message.success('Skill 更新成功')
+      } else {
+        // 新建模式
+        const newSkill = {
+          id: Date.now(),
+          ...values,
+          status: 'active',
+          usageCount: 0,
+          successRate: 100,
+          createdAt: new Date().toISOString().split('T')[0],
+        }
+        setSkills([...skills, newSkill])
+        message.success('Skill 创建成功')
       }
-      setSkills([...skills, newSkill])
-      message.success('Skill 创建成功')
+      
       setModalVisible(false)
     } catch (error) {
       // 表单验证失败
@@ -68,8 +89,38 @@ function Skills() {
     })
   }
 
-  const handleTest = (skill) => {
-    message.info(`测试 Skill: ${skill.name}`)
+  const handleTest = async (skill) => {
+    const hide = message.loading(`正在测试 Skill: ${skill.name}...`, 0)
+    
+    // 模拟测试过程
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    hide()
+    
+    // 模拟测试结果
+    const success = Math.random() > 0.3 // 70% 成功率
+    
+    if (success) {
+      Modal.success({
+        title: '测试成功',
+        content: (
+          <div>
+            <p>Skill <strong>{skill.name}</strong> 测试通过！</p>
+            <p>执行时间: {(Math.random() * 200 + 50).toFixed(0)}ms</p>
+          </div>
+        ),
+      })
+    } else {
+      Modal.error({
+        title: '测试失败',
+        content: (
+          <div>
+            <p>Skill <strong>{skill.name}</strong> 测试失败</p>
+            <p>错误: 模拟的错误信息</p>
+          </div>
+        ),
+      })
+    }
   }
 
   const columns = [
@@ -134,6 +185,7 @@ function Skills() {
             type="link"
             size="small"
             icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
           >
             编辑
           </Button>
@@ -183,14 +235,14 @@ function Skills() {
         />
       </div>
 
-      {/* 新建 Modal */}
+      {/* 新建/编辑 Modal */}
       <Modal
-        title="新建 Skill"
+        title={editingSkill ? '编辑 Skill' : '新建 Skill'}
         open={modalVisible}
         onOk={handleSubmit}
         onCancel={() => setModalVisible(false)}
         width={600}
-        okText="创建"
+        okText={editingSkill ? '保存' : '创建'}
         cancelText="取消"
       >
         <Form form={form} layout="vertical">

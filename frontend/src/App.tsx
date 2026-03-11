@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { Button } from 'antd'
+import { Button, Badge, Avatar, Dropdown } from 'antd'
 import {
   MessageOutlined,
   ThunderboltOutlined,
   ApiOutlined,
   DatabaseOutlined,
   SettingOutlined,
+  UserOutlined,
+  BellOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  RobotOutlined,
 } from '@ant-design/icons'
 import Chat from './components/Chat'
 import Wizard from './components/Wizard'
@@ -16,13 +21,14 @@ import './App.css'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('chat')
+  const [collapsed, setCollapsed] = useState(false)
 
   const pages = [
-    { key: 'chat', icon: <MessageOutlined />, label: '对话' },
-    { key: 'wizard', icon: <ThunderboltOutlined />, label: '向导' },
-    { key: 'skills', icon: <ApiOutlined />, label: 'Skills' },
-    { key: 'adapters', icon: <DatabaseOutlined />, label: '适配器' },
-    { key: 'settings', icon: <SettingOutlined />, label: '设置' },
+    { key: 'chat', icon: <MessageOutlined />, label: '对话', desc: '智能对话助手' },
+    { key: 'wizard', icon: <ThunderboltOutlined />, label: '向导', desc: '系统配置向导' },
+    { key: 'skills', icon: <ApiOutlined />, label: '技能', desc: '管理业务技能' },
+    { key: 'adapters', icon: <DatabaseOutlined />, label: '适配器', desc: '业务系统对接' },
+    { key: 'settings', icon: <SettingOutlined />, label: '设置', desc: '系统配置' },
   ]
 
   const renderContent = () => {
@@ -42,51 +48,114 @@ function App() {
     }
   }
 
+  const userMenuItems = [
+    {
+      key: 'profile',
+      label: '个人资料',
+      icon: <UserOutlined />,
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'logout',
+      label: '退出登录',
+      icon: <UserOutlined />,
+    },
+  ]
+
   return (
     <div className="app">
       {/* 侧边栏 */}
-      <aside className="sidebar">
-        <div className="logo">
-          <div className="logo-icon">◆</div>
-          <div className="logo-text">
-            <h1>AI Agent</h1>
-            <p>智能业务平台</p>
+      <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+        {/* Logo */}
+        <div className="logo-section">
+          <div className="logo-mark">
+            <RobotOutlined />
           </div>
+          {!collapsed && (
+            <div className="logo-text">
+              <div className="logo-title">AI Agent</div>
+              <div className="logo-subtitle">智能业务平台</div>
+            </div>
+          )}
         </div>
 
-        <nav className="nav">
+        {/* 导航菜单 */}
+        <nav className="nav-menu">
           {pages.map(page => (
             <button
               key={page.key}
               className={`nav-item ${currentPage === page.key ? 'active' : ''}`}
               onClick={() => setCurrentPage(page.key)}
             >
-              <span className="nav-icon">{page.icon}</span>
-              <span className="nav-label">{page.label}</span>
+              <div className="nav-icon">{page.icon}</div>
+              {!collapsed && (
+                <div className="nav-content">
+                  <div className="nav-label">{page.label}</div>
+                  <div className="nav-desc">{page.desc}</div>
+                </div>
+              )}
             </button>
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <div className="status">
-            <span className="status-dot"></span>
-            <span>运行中</span>
+        {/* 底部状态 */}
+        {!collapsed && (
+          <div className="sidebar-footer">
+            <div className="status-badge">
+              <Badge status="success" />
+              <span className="status-text">系统运行中</span>
+            </div>
+            <div className="version-tag">v1.0.0</div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* 主内容区 */}
       <main className="main">
+        {/* 顶部栏 */}
         <header className="header">
-          <h2 className="page-title">
-            {pages.find(p => p.key === currentPage)?.label}
-          </h2>
-          <div className="user">
-            <div className="avatar">A</div>
-            <span>Admin</span>
+          <div className="header-left">
+            <Button
+              type="text"
+              className="toggle-btn"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+            />
+            <div className="page-info">
+              <h1 className="page-title">
+                {pages.find(p => p.key === currentPage)?.label}
+              </h1>
+              <span className="page-desc">
+                {pages.find(p => p.key === currentPage)?.desc}
+              </span>
+            </div>
+          </div>
+
+          <div className="header-right">
+            <Badge count={3} size="small" className="notification-badge">
+              <Button 
+                type="text" 
+                icon={<BellOutlined />}
+                className="icon-btn"
+              />
+            </Badge>
+            
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <div className="user-profile">
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />}
+                  className="user-avatar"
+                />
+                <span className="user-name">Admin</span>
+              </div>
+            </Dropdown>
           </div>
         </header>
 
+        {/* 内容区 */}
         <div className="content">
           {renderContent()}
         </div>

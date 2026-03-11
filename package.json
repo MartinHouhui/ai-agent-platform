@@ -1,5 +1,4 @@
 {
-  "name": "ai-agent-platform",
   "version": "0.1.0",
   "description": "可自主进化的 AI Agent 平台",
   "main": "dist/index.js",
@@ -36,6 +35,7 @@
     "mysql2": "^3.19.0",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.2.2",
+    "sql.js": "^1.14.1",
     "typeorm": "^0.3.28",
     "winston": "^3.11.0",
     "zod": "^3.22.4"
@@ -49,6 +49,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.56.0",
     "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
