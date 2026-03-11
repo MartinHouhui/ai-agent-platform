@@ -2,12 +2,14 @@
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
+const { validateSkill, validateAdapter, requestLogger, errorHandler } = require('./middleware/validation');
 
 const app = express();
 
 // 中间件
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 
 // 数据库连接池
 const pool = mysql.createPool({
@@ -93,7 +95,7 @@ app.get('/api/skills', async (req, res) => {
   }
 });
 
-app.post('/api/skills', async (req, res) => {
+app.post('/api/skills', validateSkill, async (req, res) => {
   try {
     const { id, name, version, description, system_type, domain } = req.body;
     const skillId = id || Date.now().toString();
@@ -154,7 +156,7 @@ app.get('/api/adapters', async (req, res) => {
   }
 });
 
-app.post('/api/adapters', async (req, res) => {
+app.post('/api/adapters', validateAdapter, async (req, res) => {
   try {
     const { id, name, type, baseUrl, config } = req.body;
     const adapterId = id || Date.now().toString();
@@ -212,6 +214,18 @@ app.post('/api/wizard/start', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// 404 处理
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'API 端点不存在',
+    code: 'NOT_FOUND'
+  });
+});
+
+// 错误处理中间件
+app.use(errorHandler);
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;
