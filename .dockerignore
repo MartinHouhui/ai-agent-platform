@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+dist
+build
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Test
+coverage
+.nyc_output
+playwright-report
+test-results
+
+# Logs
+logs
+*.log
+
+# Temp
+tmp
+temp

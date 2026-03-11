@@ -4,56 +4,109 @@ services:
   # MySQL 数据库
   mysql:
     image: mysql:8.0
-    container_name: ai_agent_mysql
-    restart: always
+    container_name: ai-agent-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root123456
-      MYSQL_DATABASE: ai_agent_platform
-      MYSQL_USER: ai_agent
-      MYSQL_PASSWORD: ai_agent123456
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${DB_DATABASE:-ai_agent_platform}
+      MYSQL_USER: ${DB_USERNAME:-ai_agent}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ai_agent123456}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - ai-agent-network
 
-  # Redis（可选，用于缓存）
+  # Redis 缓存（可选）
   redis:
     image: redis:7-alpine
-    container_name: ai_agent_redis
-    restart: always
+    container_name: ai-agent-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ai-agent-network
 
-  # AI Agent Platform
+  # AI Agent Platform 应用
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ai_agent_app
-    restart: always
-    ports:
-      - "3000:3000"
+    container_name: ai-agent-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      NODE_ENV: production
-      PORT: 3000
+      # 数据库配置
+      DB_TYPE: mysql
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_USERNAME: ai_agent
-      DB_PASSWORD: ai_agent123456
-      DB_DATABASE: ai_agent_platform
-      REDIS_URL: redis://redis:6379
+      DB_DATABASE: ${DB_DATABASE:-ai_agent_platform}
+      DB_USERNAME: ${DB_USERNAME:-ai_agent}
+      DB_PASSWORD: ${DB_PASSWORD:-ai_agent123456}
+
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # JWT 配置
+      JWT_SECRET: ${JWT_SECRET:-ai-agent-platform-jwt-secret-2026}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+
+      # 应用配置
+      NODE_ENV: production
+      PORT: 3000
+
+      # 模型配置（如果需要）
+      GLM_API_KEY: ${GLM_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      ALIBABA_API_KEY: ${ALIBABA_API_KEY:-}
-      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+    ports:
+      - "3000:3000"
+    networks:
+      - ai-agent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 前端（如果需要独立部署）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ai-agent-frontend
+    restart: unless-stopped
     depends_on:
-      - mysql
-      - redis
-    volumes:
-      - ./logs:/app/logs
+      - app
+    ports:
+      - "5173:5173"
+    networks:
+      - ai-agent-network
 
 volumes:
   mysql_data:
+    driver: local
   redis_data:
+    driver: local
+
+networks:
+  ai-agent-network:
+    driver: bridge

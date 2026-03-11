@@ -1,4 +1,7 @@
-// Docker 健康检查
+/**
+ * Docker 健康检查脚本
+ */
+
 const http = require('http');
 
 const options = {
