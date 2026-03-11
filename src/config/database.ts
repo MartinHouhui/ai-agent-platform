@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 import { SkillEntity } from '../entities/SkillEntity';
 import { AdapterConfigEntity } from '../entities/AdapterConfigEntity';
 import { LearningCaseEntity } from '../entities/LearningCaseEntity';
+import { User } from '../entities/UserEntity';
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
 
 // 根据数据库类型创建配置
 function createDatabaseConfig(): DataSourceOptions {
-  const entities = [SkillEntity, AdapterConfigEntity, LearningCaseEntity];
+  const entities = [SkillEntity, AdapterConfigEntity, LearningCaseEntity, User];
   const isProduction = process.env.NODE_ENV === 'production';
 
   switch (dbType) {

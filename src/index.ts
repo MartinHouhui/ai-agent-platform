@@ -17,6 +17,7 @@ import { QueryOrderSkill } from './skills/examples/QueryOrderSkill';
 import { RESTAdapter } from './adapters/RESTAdapter';
 import { AdapterManager } from './adapters/AdapterManager';
 import { AdapterWizardService } from './services/AdapterWizardService';
+import { AuthService } from './services/AuthService';
 
 /**
  * 主函数
@@ -55,7 +56,12 @@ async function main() {
     logger.info('🧙 初始化向导服务...');
     const wizardService = new AdapterWizardService();
 
-    // 7. 启动 API 服务器
+    // 7. 初始化管理员账户
+    logger.info('👤 初始化认证系统...');
+    const authService = new AuthService();
+    await authService.createAdminUser();
+
+    // 8. 启动 API 服务器
     const port = parseInt(process.env.PORT || '3000');
     logger.info(`🌐 启动 API 服务器 (端口: ${port})...`);
     startServer(agent, skillManager, adapterManager, wizardService, port, agentEngine);
@@ -64,17 +70,22 @@ async function main() {
     logger.info('');
     logger.info('📖 API 端点:');
     logger.info('  健康检查: GET  http://localhost:3000/health');
+    logger.info('  认证:     POST http://localhost:3000/api/auth/login');
     logger.info('  聊天:     POST http://localhost:3000/api/chat');
     logger.info('  Agent 引擎: POST http://localhost:3000/api/agent/chat');
     logger.info('  向导:     POST http://localhost:3000/api/wizard/start');
     logger.info('  Skills:   GET  http://localhost:3000/api/skills');
     logger.info('  Adapters: GET  http://localhost:3000/api/adapters');
     logger.info('');
+    logger.info('💡 默认管理员账户:');
+    logger.info('  用户名: admin');
+    logger.info('  密码: admin123456');
+    logger.info('');
     logger.info('💡 测试命令:');
     logger.info('  curl http://localhost:3000/health');
-    logger.info('  curl -X POST http://localhost:3000/api/agent/chat \\');
+    logger.info('  curl -X POST http://localhost:3000/api/auth/login \\');
     logger.info('    -H "Content-Type: application/json" \\');
-    logger.info('    -d \'{"message":"帮我查询今天的订单"}\'');
+    logger.info('    -d \'{"username":"admin","password":"admin123456"}\'');
 
   } catch (error: any) {
     logger.error('❌ 启动失败', { error: error.message, stack: error.stack });
