@@ -1,36 +1,50 @@
-import { useState } from 'react'
-import { Button, Table, Tag, Space, Modal, Form, Input, Select, message } from 'antd'
-import { PlusOutlined, PlayCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useState, useEffect } from 'react'
+import { Button, Table, Tag, Space, Modal, Form, Input, Select, message, Spin } from 'antd'
+import { PlusOutlined, PlayCircleOutlined, EditOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons'
+import { TableSkeleton } from './Skeletons'
 import './Skills.css'
 
 const { TextArea } = Input
 const { Option } = Select
 
 function Skills() {
-  const [skills, setSkills] = useState([
-    {
-      id: 1,
-      name: '查询订单',
-      type: 'code',
-      status: 'active',
-      usageCount: 128,
-      successRate: 95,
-      createdAt: '2026-03-09',
-    },
-    {
-      id: 2,
-      name: '创建订单',
-      type: 'code',
-      status: 'active',
-      usageCount: 56,
-      successRate: 92,
-      createdAt: '2026-03-09',
-    },
-  ])
-  
+  const [skills, setSkills] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
   const [form] = Form.useForm()
   const [editingSkill, setEditingSkill] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
+  // 模拟初始数据加载
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      // 模拟 API 调用延迟
+      await new Promise(resolve => setTimeout(resolve, 800))
+      setSkills([
+        {
+          id: 1,
+          name: '查询订单',
+          type: 'code',
+          status: 'active',
+          usageCount: 128,
+          successRate: 95,
+          createdAt: '2026-03-09',
+        },
+        {
+          id: 2,
+          name: '创建订单',
+          type: 'code',
+          status: 'active',
+          usageCount: 56,
+          successRate: 92,
+          createdAt: '2026-03-09',
+        },
+      ])
+      setLoading(false)
+    }
+    loadData()
+  }, [])
 
   const handleAdd = () => {
     setEditingSkill(null)
@@ -46,7 +60,11 @@ function Skills() {
 
   const handleSubmit = async () => {
     try {
+      setSubmitting(true)
       const values = await form.validateFields()
+      
+      // 模拟 API 调用延迟
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       if (editingSkill) {
         // 编辑模式
@@ -73,6 +91,11 @@ function Skills() {
       setModalVisible(false)
     } catch (error) {
       // 表单验证失败
+      if (error.errorFields) {
+        message.error('请检查表单填写')
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -223,16 +246,20 @@ function Skills() {
 
       {/* 表格 */}
       <div className="table-wrapper">
-        <Table
-          dataSource={skills}
-          columns={columns}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 个 Skills`
-          }}
-        />
+        {loading ? (
+          <TableSkeleton />
+        ) : (
+          <Table
+            dataSource={skills}
+            columns={columns}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `共 ${total} 个 Skills`
+            }}
+          />
+        )}
       </div>
 
       {/* 新建/编辑 Modal */}
@@ -244,6 +271,7 @@ function Skills() {
         width={600}
         okText={editingSkill ? '保存' : '创建'}
         cancelText="取消"
+        confirmLoading={submitting}
       >
         <Form form={form} layout="vertical">
           <Form.Item

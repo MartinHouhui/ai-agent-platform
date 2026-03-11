@@ -1,33 +1,49 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Table, Tag, Space, Modal, Form, Input, Select, message, Badge } from 'antd'
 import { PlusOutlined, ApiOutlined, SyncOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons'
+import { TableSkeleton } from './Skeletons'
 import './Adapters.css'
 
 const { Option } = Select
 const { TextArea } = Input
 
 function Adapters() {
-  const [adapters, setAdapters] = useState([
-    {
-      id: 1,
-      name: 'natural-erp',
-      type: 'ERP',
-      apiUrl: 'https://erp.natural.com/api',
-      status: 'online',
-      lastSync: '2026-03-10 12:30:00',
-    },
-    {
-      id: 2,
-      name: 'company-crm',
-      type: 'CRM',
-      apiUrl: 'https://crm.company.com/api',
-      status: 'offline',
-      lastSync: '2026-03-09 18:20:00',
-    },
-  ])
-
+  const [adapters, setAdapters] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
   const [form] = Form.useForm()
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [testingId, setTestingId] = useState(null)
+  const [discoveringId, setDiscoveringId] = useState(null)
+
+  // 模拟初始数据加载
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      // 模拟 API 调用延迟
+      await new Promise(resolve => setTimeout(resolve, 600))
+      setAdapters([
+        {
+          id: 1,
+          name: 'natural-erp',
+          type: 'ERP',
+          apiUrl: 'https://erp.natural.com/api',
+          status: 'online',
+          lastSync: '2026-03-10 12:30:00',
+        },
+        {
+          id: 2,
+          name: 'company-crm',
+          type: 'CRM',
+          apiUrl: 'https://crm.company.com/api',
+          status: 'offline',
+          lastSync: '2026-03-09 18:20:00',
+        },
+      ])
+      setLoading(false)
+    }
+    loadData()
+  }, [])
 
   const handleAdd = () => {
     form.resetFields()
@@ -36,7 +52,12 @@ function Adapters() {
 
   const handleSubmit = async () => {
     try {
+      setSubmitting(true)
       const values = await form.validateFields()
+      
+      // 模拟 API 调用延迟
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       const newAdapter = {
         id: Date.now(),
         ...values,
@@ -48,18 +69,60 @@ function Adapters() {
       setModalVisible(false)
     } catch (error) {
       // 验证失败
+      if (error.errorFields) {
+        message.error('请检查表单填写')
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  const handleTest = (adapter) => {
-    message.loading(`测试连接 ${adapter.name}...`, 1).then(() => {
-      message.success('连接成功')
-    })
+  const handleTest = async (adapter) => {
+    setTestingId(adapter.id)
+    const hide = message.loading(`测试连接 ${adapter.name}...`, 0)
+    
+    // 模拟测试
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    
+    hide()
+    setTestingId(null)
+    
+    // 模拟测试结果（70% 成功率）
+    const success = Math.random() > 0.3
+    if (success) {
+      message.success(`${adapter.name} 连接成功`)
+      // 更新状态为在线
+      setAdapters(adapters.map(a => 
+        a.id === adapter.id ? { ...a, status: 'online' } : a
+      ))
+    } else {
+      message.error(`${adapter.name} 连接失败`)
+    }
   }
 
-  const handleDiscover = (adapter) => {
-    message.loading(`发现 ${adapter.name} 的 API...`, 2).then(() => {
-      message.success('API 发现完成')
+  const handleDiscover = async (adapter) => {
+    setDiscoveringId(adapter.id)
+    const hide = message.loading(`发现 ${adapter.name} 的 API...`, 0)
+    
+    // 模拟发现过程
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    hide()
+    setDiscoveringId(null)
+    
+    Modal.success({
+      title: 'API 发现完成',
+      content: (
+        <div>
+          <p>已发现 <strong>{adapter.name}</strong> 的以下 API：</p>
+          <ul>
+            <li>GET /api/orders - 查询订单</li>
+            <li>POST /api/orders - 创建订单</li>
+            <li>GET /api/products - 查询产品</li>
+            <li>PUT /api/products/:id - 更新产品</li>
+          </ul>
+        </div>
+      ),
     })
   }
 
@@ -132,17 +195,20 @@ function Adapters() {
           <Button
             type="link"
             size="small"
-            icon={<SyncOutlined />}
+            icon={<SyncOutlined spin={testingId === record.id} />}
             onClick={() => handleTest(record)}
+            disabled={testingId === record.id}
           >
-            测试
+            {testingId === record.id ? '测试中...' : '测试'}
           </Button>
           <Button
             type="link"
             size="small"
             onClick={() => handleDiscover(record)}
+            disabled={discoveringId === record.id}
+            loading={discoveringId === record.id}
           >
-            发现
+            {discoveringId === record.id ? '发现中...' : '发现'}
           </Button>
           <Button
             type="link"
@@ -190,16 +256,20 @@ function Adapters() {
 
       {/* 表格 */}
       <div className="table-wrapper">
-        <Table
-          dataSource={adapters}
-          columns={columns}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 个适配器`
-          }}
-        />
+        {loading ? (
+          <TableSkeleton />
+        ) : (
+          <Table
+            dataSource={adapters}
+            columns={columns}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `共 ${total} 个适配器`
+            }}
+          />
+        )}
       </div>
 
       {/* 添加 Modal */}
@@ -211,6 +281,7 @@ function Adapters() {
         width={600}
         okText="创建"
         cancelText="取消"
+        confirmLoading={submitting}
       >
         <Form form={form} layout="vertical">
           <Form.Item
