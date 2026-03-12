@@ -8,6 +8,7 @@ import { ModelRouter } from '../models/ModelRouter';
 import { SkillManager } from '../skills/SkillManager';
 import { MCPManager } from '../mcp/MCPManager';
 import { AdapterManager } from '../adapters/AdapterManager';
+import { sessionCache } from '../cache/SessionCache';
 import { logger } from '../utils/logger';
 
 export class AgentEngine {
@@ -15,7 +16,6 @@ export class AgentEngine {
   private skillManager: SkillManager;
   private mcpManager: MCPManager;
   private adapterManager: AdapterManager;
-  private conversationHistory: Map<string, any[]> = new Map();
 
   constructor() {
     this.modelRouter = new ModelRouter();
@@ -97,7 +97,7 @@ export class AgentEngine {
   ): Promise<Intent> {
     try {
       // 获取对话历史
-      const history = sessionId ? this.conversationHistory.get(sessionId) || [] : [];
+      const history = sessionId ? await sessionCache.getHistory(sessionId) : [];
 
       const prompt = `
 你是一个意图识别专家。分析以下用户消息的意图，返回严格的 JSON 格式（不要包含任何其他文字）：
@@ -148,9 +148,11 @@ ${history.length > 0 ? `对话历史：\n${history.slice(-3).map(h => `${h.role}
 
       // 更新对话历史
       if (sessionId) {
-        const history = this.conversationHistory.get(sessionId) || [];
-        history.push({ role: 'user', content: userMessage });
-        this.conversationHistory.set(sessionId, history.slice(-10)); // 保留最近 10 条
+        await sessionCache.addMessage(sessionId, { 
+          role: 'user', 
+          content: userMessage,
+          timestamp: Date.now()
+        });
       }
 
       logger.info('[AgentEngine] 意图识别完成', { intent });
@@ -487,11 +489,11 @@ ${history.length > 0 ? `对话历史：\n${history.slice(-3).map(h => `${h.role}
   /**
    * 清除对话历史
    */
-  clearHistory(sessionId?: string): void {
+  async clearHistory(sessionId?: string): Promise<void> {
     if (sessionId) {
-      this.conversationHistory.delete(sessionId);
+      await sessionCache.clearHistory(sessionId);
     } else {
-      this.conversationHistory.clear();
+      await sessionCache.cleanupExpiredSessions('*');
     }
   }
 }
