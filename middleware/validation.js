@@ -1,72 +1,63 @@
 // 数据验证中间件
+const Joi = require('joi');
+
+// Skill 验证 Schema
+const skillSchema = Joi.object({
+  id: Joi.string().max(100),
+  name: Joi.string().min(1).max(255).required(),
+  version: Joi.string().max(20),
+  description: Joi.string().allow(''),
+  system_type: Joi.string().min(1).max(50).required(),
+  domain: Joi.string().min(1).max(50).required(),
+  isActive: Joi.boolean()
+});
+
+// Adapter 验证 Schema
+const adapterSchema = Joi.object({
+  id: Joi.string().max(100),
+  name: Joi.string().min(1).max(255).required(),
+  type: Joi.string().min(1).max(50).required(),
+  baseUrl: Joi.string().uri().required(),
+  config: Joi.object()
+});
+
+// 验证函数（供测试和中间件使用）
+const validateSkillData = (data) => {
+  return skillSchema.validate(data, { abortEarly: false });
+};
+
+const validateAdapterData = (data) => {
+  return adapterSchema.validate(data, { abortEarly: false });
+};
+
+// Express 中间件
 const validateSkill = (req, res, next) => {
-  const { name, system_type, domain } = req.body;
+  const { error, value } = validateSkillData(req.body);
   
-  if (!name || name.trim().length === 0) {
+  if (error) {
     return res.status(400).json({
       success: false,
-      error: 'Skill 名称不能为空',
+      error: error.details[0].message,
       code: 'VALIDATION_ERROR'
     });
   }
   
-  if (!system_type || system_type.trim().length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: '系统类型不能为空',
-      code: 'VALIDATION_ERROR'
-    });
-  }
-  
-  if (!domain || domain.trim().length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: '领域不能为空',
-      code: 'VALIDATION_ERROR'
-    });
-  }
-  
+  req.body = value;
   next();
 };
 
 const validateAdapter = (req, res, next) => {
-  const { name, type, baseUrl } = req.body;
+  const { error, value } = validateAdapterData(req.body);
   
-  if (!name || name.trim().length === 0) {
+  if (error) {
     return res.status(400).json({
       success: false,
-      error: 'Adapter 名称不能为空',
+      error: error.details[0].message,
       code: 'VALIDATION_ERROR'
     });
   }
   
-  if (!type || type.trim().length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'Adapter 类型不能为空',
-      code: 'VALIDATION_ERROR'
-    });
-  }
-  
-  if (!baseUrl || baseUrl.trim().length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'Base URL 不能为空',
-      code: 'VALIDATION_ERROR'
-    });
-  }
-  
-  // 验证 URL 格式
-  try {
-    new URL(baseUrl);
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      error: 'Base URL 格式不正确',
-      code: 'VALIDATION_ERROR'
-    });
-  }
-  
+  req.body = value;
   next();
 };
 
@@ -112,6 +103,8 @@ const errorHandler = (err, req, res, next) => {
 module.exports = {
   validateSkill,
   validateAdapter,
+  validateSkillData,
+  validateAdapterData,
   requestLogger,
   errorHandler
 };
