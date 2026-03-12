@@ -147,8 +147,12 @@ export function startServer(
   app.use('/api/adapters', createAdapterRoutes(adapterManager));
 
   // 添加 Agent 引擎路由（如果提供了 agentEngine）
+  logger.info('检查 agentEngine', { hasAgentEngine: !!agentEngine });
   if (agentEngine) {
+    logger.info('注册 Agent 引擎路由');
     app.use('/api/agent', createAgentRoutes(agentEngine));
+  } else {
+    logger.warn('agentEngine 未提供，跳过注册 Agent 引擎路由');
   }
 
   // 添加认证路由
@@ -167,6 +171,7 @@ export function startServer(
     if (agentEngine) {
       logger.info(`🤖 Agent 引擎 API: http://localhost:${port}/api/agent`);
     }
+
   });
 
   return server;

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Button, Input } from 'antd'
+import { Button, Input, message } from 'antd'
 import { SendOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons'
+import api from '../services/api'
 import './Chat.css'
 
 const { TextArea } = Input
@@ -28,20 +29,36 @@ function Chat() {
     }
 
     setMessages(prev => [...prev, userMsg])
+    const currentInput = input
     setInput('')
     setLoading(true)
 
-    // 模拟 AI 响应
-    setTimeout(() => {
+    try {
+      // 调用后端 Agent 引擎 API
+      const response = await api.post('/api/agent/chat', {
+        message: currentInput
+      })
+
       const aiMsg = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: `收到你的消息："${input}"。这是一个演示回复，实际使用时需要连接后端服务。`,
+        content: response.data.response || response.data.message || '处理完成',
         time: new Date()
       }
       setMessages(prev => [...prev, aiMsg])
+    } catch (error: any) {
+      console.error('Agent chat error:', error)
+      const errorMsg = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: `抱歉，处理时出现错误：${error.response?.data?.error || error.message || '未知错误'}`,
+        time: new Date()
+      }
+      setMessages(prev => [...prev, errorMsg])
+      message.error('请求失败，请检查后端服务')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handleKeyPress = (e) => {
