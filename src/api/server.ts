@@ -5,6 +5,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { createServer } from 'http';
 import { Agent } from '../core/Agent';
 import { AgentEngine } from '../core/AgentEngine';
 import { SkillManager } from '../skills/SkillManager';
@@ -16,6 +17,7 @@ import { createAgentRoutes } from './agentRoutes';
 import { createAuthRoutes } from './authRoutes';
 import docsRouter from './docs';
 import { logger } from '../utils/logger';
+import { webSocketService } from '../cache/WebSocketService';
 
 export function createAPIServer(agent: Agent, agentEngine?: AgentEngine) {
   const app = express();
@@ -161,18 +163,26 @@ export function startServer(
   // API 文档
   app.use('/api-docs', docsRouter);
 
-  const server = app.listen(port, () => {
+  // 创建 HTTP Server
+  const httpServer = createServer(app);
+
+  // 初始化 WebSocket
+  webSocketService.init(httpServer);
+
+  // 启动服务器
+  httpServer.listen(port, () => {
     logger.info(`🚀 API 服务器已启动: http://localhost:${port}`);
     logger.info(`📋 API 文档: http://localhost:${port}/api-docs`);
     logger.info(`🔐 认证 API: http://localhost:${port}/api/auth`);
     logger.info(`🧙 向导 API: http://localhost:${port}/api/wizard`);
     logger.info(`📚 Skills API: http://localhost:${port}/api/skills`);
     logger.info(`🔌 Adapters API: http://localhost:${port}/api/adapters`);
+    logger.info(`🔌 WebSocket: ws://localhost:${port}`);
     if (agentEngine) {
       logger.info(`🤖 Agent 引擎 API: http://localhost:${port}/api/agent`);
     }
 
   });
 
-  return server;
+  return httpServer;
 }
