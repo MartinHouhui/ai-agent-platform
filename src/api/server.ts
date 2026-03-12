@@ -3,8 +3,6 @@
  */
 
 import express, { Request, Response } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import { createServer } from 'http';
 import { Agent } from '../core/Agent';
 import { AgentEngine } from '../core/AgentEngine';
@@ -18,19 +16,42 @@ import { createAuthRoutes } from './authRoutes';
 import docsRouter from './docs';
 import { logger } from '../utils/logger';
 import { webSocketService } from '../cache/WebSocketService';
+import {
+  compressionMiddleware,
+  rateLimiter,
+  authRateLimiter,
+  apiRateLimiter,
+  corsOptions,
+  helmetOptions,
+  responseTimeMiddleware,
+  cacheControlMiddleware,
+  requestIdMiddleware,
+} from '../middleware/performance';
 
 export function createAPIServer(agent: Agent, agentEngine?: AgentEngine) {
   const app = express();
 
-  // 中间件
-  app.use(helmet());
-  app.use(cors());
+  // 性能优化中间件
+  app.use(compressionMiddleware);
+  app.use(responseTimeMiddleware);
+  app.use(cacheControlMiddleware);
+  app.use(requestIdMiddleware);
+
+  // 安全中间件
+  app.use(require('helmet')(helmetOptions));
+  app.use(require('cors')(corsOptions));
+
+  // 通用速率限制
+  app.use(rateLimiter);
+
+  // 基础中间件
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
   // 请求日志
   app.use((req, res, next) => {
     logger.info(`${req.method} ${req.path}`, {
+      requestId: req.headers['x-request-id'],
       body: req.body,
       query: req.query,
     });
@@ -157,8 +178,12 @@ export function startServer(
     logger.warn('agentEngine 未提供，跳过注册 Agent 引擎路由');
   }
 
-  // 添加认证路由
-  app.use('/api/auth', createAuthRoutes());
+  // 添加认证路由（严格速率限制）
+  app.use('/api/auth', authRateLimiter, createAuthRoutes());
+
+  // API 路由（API 速率限制）
+  app.use('/api/chat', apiRateLimiter);
+  app.use('/api/discover', apiRateLimiter);
 
   // API 文档
   app.use('/api-docs', docsRouter);

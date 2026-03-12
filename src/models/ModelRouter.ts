@@ -4,9 +4,17 @@
 
 import { Model } from '../core/types';
 import { logger } from '../utils/logger';
+import { qwenClient } from './QwenClient';
 
 // 模型配置
 const MODELS: Model[] = [
+  {
+    id: 'qwen3.5-plus',
+    name: '通义千问 3.5 Plus',
+    provider: 'alibaba',
+    capabilities: ['chinese', 'code', 'analysis', 'reasoning', 'multilingual'],
+    costPer1kTokens: 0.004
+  },
   {
     id: 'gpt-4-turbo',
     name: 'GPT-4 Turbo',
@@ -27,13 +35,6 @@ const MODELS: Model[] = [
     provider: 'google',
     capabilities: ['code', 'analysis', 'multimodal', 'creative'],
     costPer1kTokens: 0.001
-  },
-  {
-    id: 'qwen-max',
-    name: '通义千问 Max',
-    provider: 'alibaba',
-    capabilities: ['chinese', 'code', 'analysis'],
-    costPer1kTokens: 0.004
   },
   {
     id: 'glm-4',
@@ -58,13 +59,19 @@ const ROUTING_STRATEGY: Record<string, string[]> = {
 
 export class ModelRouter {
   private models: Map<string, Model> = new Map();
-  private apiKey: string;
+  private defaultModel: string;
 
   constructor() {
     // 加载模型配置
     MODELS.forEach(m => this.models.set(m.id, m));
-    this.apiKey = process.env.OPENAI_API_KEY || '';
-    logger.info('模型路由器初始化', { modelCount: this.models.size });
+    
+    // 优先使用通义千问
+    this.defaultModel = process.env.ANTHROPIC_MODEL || 'qwen3.5-plus';
+    
+    logger.info('模型路由器初始化', { 
+      modelCount: this.models.size,
+      defaultModel: this.defaultModel 
+    });
   }
 
   /**
@@ -164,14 +171,30 @@ export class ModelRouter {
   }
 
   /**
-   * 调用阿里云
+   * 调用阿里云（通义千问）
    */
   private async callAlibaba(model: Model, prompt: string, options?: any): Promise<any> {
-    // TODO: 实现阿里云 API 调用
-    const response = {
-      content: `[阿里云 ${model.id}] 响应: ${prompt.substring(0, 50)}...`
-    };
-    return response;
+    try {
+      const response = await qwenClient.chat(
+        [{ role: 'user', content: prompt }],
+        {
+          model: model.id,
+          temperature: options?.temperature || 0.7,
+          maxTokens: options?.maxTokens || 4096
+        }
+      );
+      
+      return {
+        content: response.content,
+        usage: response.usage
+      };
+    } catch (error: any) {
+      logger.error('通义千问调用失败', { model: model.id, error: error.message });
+      // 降级响应
+      return {
+        content: `[通义千问降级模式] ${prompt.substring(0, 50)}...`
+      };
+    }
   }
 
   /**

@@ -9,6 +9,7 @@ import { SkillManager } from '../skills/SkillManager';
 import { MCPManager } from '../mcp/MCPManager';
 import { AdapterManager } from '../adapters/AdapterManager';
 import { sessionCache } from '../cache/SessionCache';
+import { qwenClient } from '../models/QwenClient';
 import { logger } from '../utils/logger';
 
 export class AgentEngine {
@@ -89,49 +90,26 @@ export class AgentEngine {
   }
 
   /**
-   * 1. 意图理解 - 使用 LLM 分析用户意图
+   * 1. 意图理解 - 使用通义千问 LLM 分析
    */
   private async understandIntent(
     userMessage: string,
     sessionId?: string
   ): Promise<Intent> {
     try {
+      logger.info('[AgentEngine] 开始意图理解', { userMessage });
+
       // 获取对话历史
       const history = sessionId ? await sessionCache.getHistory(sessionId) : [];
 
-      const prompt = `
-你是一个意图识别专家。分析以下用户消息的意图，返回严格的 JSON 格式（不要包含任何其他文字）：
-
-{
-  "type": "query|create|update|delete|analyze|integrate|chat|unknown",
-  "action": "具体动作描述（简洁明了）",
-  "entities": {
-    "system": "系统名称（如 ERP、CRM）",
-    "operation": "操作类型",
-    "target": "目标对象"
-  },
-  "confidence": 0.0-1.0
-}
-
-用户消息：${userMessage}
-
-${history.length > 0 ? `对话历史：\n${history.slice(-3).map(h => `${h.role}: ${h.content}`).join('\n')}` : ''}
-`;
-
-      const model = await this.modelRouter.selectModel('intent-understanding');
-      const response = await this.modelRouter.call(model, prompt);
-
-      // 解析 JSON
+      // 优先使用通义千问
       let parsed;
       try {
-        // 提取 JSON（可能包含 markdown 代码块）
-        const jsonMatch = response.content.match(/```json\s*([\s\S]*?)\s*```/) ||
-                         response.content.match(/\{[\s\S]*\}/);
-        const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : response.content;
-        parsed = JSON.parse(jsonStr);
-      } catch (parseError) {
-        logger.warn('[AgentEngine] JSON 解析失败，使用降级策略', {
-          content: response.content
+        parsed = await qwenClient.recognizeIntent(userMessage);
+        logger.info('[AgentEngine] 通义千问意图识别成功', { parsed });
+      } catch (qwenError: any) {
+        logger.warn('[AgentEngine] 通义千问调用失败，使用降级策略', { 
+          error: qwenError.message 
         });
         // 降级：根据关键词判断
         parsed = this.fallbackIntentDetection(userMessage);
