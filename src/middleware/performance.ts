@@ -151,7 +151,9 @@ export const helmetOptions = {
 export const responseTimeMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
 
-  res.on('finish', () => {
+  // 在写入头部前设置响应时间头
+  const originalWriteHead = res.writeHead.bind(res);
+  (res as any).writeHead = (statusCode: number, statusMessage?: any, headers?: any) => {
     const duration = Date.now() - start;
     res.setHeader('X-Response-Time', `${duration}ms`);
     
@@ -161,10 +163,12 @@ export const responseTimeMiddleware = (req: Request, res: Response, next: NextFu
         method: req.method,
         path: req.path,
         duration,
-        statusCode: res.statusCode,
+        statusCode,
       });
     }
-  });
+    
+    return originalWriteHead(statusCode, statusMessage, headers);
+  };
 
   next();
 };
